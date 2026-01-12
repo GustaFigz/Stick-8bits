@@ -466,15 +466,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   rb: {fileID: 1027865536}
+  groundCheck: {fileID: 1337337954}
+  animator: {fileID: 1027865539}
   speed: 6
   jumpForce: 5
-  groundCheck: {fileID: 1337337954}
   groundCheckRadius: 0.1
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  animator: {fileID: 1027865539}
   isRunningParameter: IsRunning
+  attackTriggerParameter: Attack
+  attackLockTime: 0.35
 --- !u!114 &1027865534
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -580,6 +582,22 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 19ca8e49-5d67-4513-826f-28692ce09f4f
     m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1027865533}
+        m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
+        m_MethodName: OnAttack
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: dcd3da05-be4f-4c91-b41a-5cfe8763835b
+    m_ActionName: 'Player/Attack[/Mouse/leftButton]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
