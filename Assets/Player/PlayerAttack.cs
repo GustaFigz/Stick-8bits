@@ -14,9 +14,17 @@ public class PlayerAttack : MonoBehaviour
 
     private float _nextAttackTime;
 
+
+    private void Start()
+    {
+        Debug.Log("PlayerAttack START OK");
+    }
+
     public void OnAttack(InputAction.CallbackContext context)
     {
-        if (!context.performed) return; // usar performed para disparar 1x por clique [web:140]
+        Debug.Log($"PlayerAttack OnAttack: {context.phase}");
+        if (!context.performed) return;
+
         if (attackPoint == null) return;
         if (Time.time < _nextAttackTime) return;
 
@@ -24,20 +32,34 @@ public class PlayerAttack : MonoBehaviour
         DealDamageNow();
     }
 
+
     // Podes também chamar isto por Animation Event (opcional)
     public void DealDamageNow()
     {
-        // OverlapCircleAll devolve todos os colliders no círculo (bom para melee) [web:134]
+        Debug.Log($"[ATTACK] Attempting attack at {attackPoint.position}");
+
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, enemyLayer);
+
+        Debug.Log($"[ATTACK] Found {hits.Length} colliders in range");
 
         foreach (var hit in hits)
         {
-            // GetComponentInParent para funcionar mesmo se o collider estiver num filho
+            Debug.Log($"[ATTACK] Hit object: {hit.name}");
+
             var health = hit.GetComponentInParent<EnemyHealth>();
+
             if (health != null)
+            {
+                Debug.Log($"[ATTACK] Dealing {damage} damage to {hit.name}");
                 health.TakeDamage(damage);
+            }
+            else
+            {
+                Debug.LogWarning($"[ATTACK] {hit.name} has no EnemyHealth component!");
+            }
         }
     }
+
 
     private void OnDrawGizmosSelected()
     {
