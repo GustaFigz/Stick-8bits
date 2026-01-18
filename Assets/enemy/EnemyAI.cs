@@ -114,6 +114,12 @@ public class EnemyAI : MonoBehaviour
 
     private void TryDamagePlayer()
     {
+        if (player == null) return;
+
+        // garante dano apenas se o jogador continuar dentro do alcance de ataque
+        float distToPlayer = Vector2.Distance(_rb.position, player.position);
+        if (distToPlayer > attackRange) return;
+
         var health = player.GetComponent<PlayerHealth>();
         if (health != null)
             health.TakeDamage(damage);

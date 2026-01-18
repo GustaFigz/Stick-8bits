@@ -17,8 +17,12 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float groundCheckRadius = 0.2f;
     [SerializeField] private LayerMask groundLayer;
 
+    [Header("Slopes")]
+    [SerializeField] private float slopeRayLength = 0.6f;
+    [SerializeField] private float maxSlopeAngle = 50f; // 45° + folga
+
     [Header("Animator Params")]
-    [SerializeField] private string isRunningParameter = "IsRunning"; // ajusta ao teu Animator
+    [SerializeField] private string isRunningParameter = "IsRunning";
     [SerializeField] private string attackTriggerParameter = "Attack";
 
     [Header("Attack")]
@@ -51,7 +55,6 @@ public class PlayerMovement : MonoBehaviour
     {
         FlipIfNeeded();
 
-        // Enquanto ataca, não deixa o bool de corrida “forçar” run por cima do attack
         if (!_isAttacking)
             UpdateAnimator();
     }
@@ -64,21 +67,64 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        Vector2 velocity = rb.linearVelocity;
-        velocity.x = _horizontalInput * speed;
+        bool grounded = IsGrounded();
 
-        if (_jumpRequested && IsGrounded())
+        // Jump (prioridade)
+        if (_jumpRequested && grounded)
         {
-            velocity.y = jumpForce;
+            Vector2 vJump = rb.linearVelocity;
+            vJump.x = _horizontalInput * speed;
+            vJump.y = jumpForce;
+            rb.linearVelocity = vJump;
             _jumpRequested = false;
+            return;
         }
 
-        rb.linearVelocity = velocity;
+        _jumpRequested = false;
+
+        // Movimento
+        if (grounded)
+        {
+            // Raycast para pegar a normal do chão (para slope)
+            int mask = groundLayer.value == 0 ? Physics2D.DefaultRaycastLayers : groundLayer.value;
+            RaycastHit2D hit = Physics2D.Raycast(groundCheck.position, Vector2.down, slopeRayLength, mask);
+
+            if (hit.collider != null)
+            {
+                Vector2 n = hit.normal; // normal da superfície [web:88]
+                float angle = Vector2.Angle(n, Vector2.up);
+
+                // Se está numa rampa "andável" e existe input
+                if (angle > 0.01f && angle <= maxSlopeAngle && !Mathf.Approximately(_horizontalInput, 0f))
+                {
+                    // Tangente paralela ao chão
+                    Vector2 t = Vector2.Perpendicular(n).normalized;
+
+                    // Faz a tangente apontar para o lado do input
+                    Vector2 desired = new Vector2(_horizontalInput, 0f);
+                    if (Vector2.Dot(t, desired) < 0f) t = -t;
+
+                    rb.linearVelocity = t * (Mathf.Abs(_horizontalInput) * speed);
+                    return;
+                }
+            }
+
+            // Chão plano (ou sem input / rampa inválida): comportamento original
+            Vector2 v = rb.linearVelocity;
+            v.x = _horizontalInput * speed;
+            rb.linearVelocity = v;
+        }
+        else
+        {
+            // No ar: controla só X, mantém Y
+            Vector2 v = rb.linearVelocity;
+            v.x = _horizontalInput * speed;
+            rb.linearVelocity = v;
+        }
     }
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        // opcional: bloquear input durante ataque
         if (_isAttacking) return;
 
         if (!context.performed && !context.canceled)
@@ -108,26 +154,20 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    // Ligar no PlayerInput -> Events -> Attack -> performed
     public void OnAttack(InputAction.CallbackContext context)
     {
         if (!context.performed) return;
         if (animator == null) return;
 
-        // Reinicia o lock se clicar de novo (opcional)
         if (_attackRoutine != null)
             StopCoroutine(_attackRoutine);
 
         _isAttacking = true;
         _horizontalInput = 0f;
 
-        // Para movimento horizontal imediatamente
         rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
 
-        // Evita que "run" fique true no mesmo frame
         animator.SetBool(_isRunningHash, false);
-
-        // Dispara o Trigger do ataque
         animator.SetTrigger(_attackHash);
 
         _attackRoutine = StartCoroutine(AttackLockRoutine());
@@ -187,5 +227,9 @@ public class PlayerMovement : MonoBehaviour
 
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+
+        // visual do raycast de slope
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * slopeRayLength);
     }
 }
