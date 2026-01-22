@@ -19,14 +19,14 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Slopes")]
     [SerializeField] private float slopeRayLength = 0.6f;
-    [SerializeField] private float maxSlopeAngle = 50f; // 45° + folga
+    [SerializeField] private float maxSlopeAngle = 50f;
 
     [Header("Animator Params")]
     [SerializeField] private string isRunningParameter = "IsRunning";
     [SerializeField] private string attackTriggerParameter = "Attack";
 
     [Header("Attack")]
-    [SerializeField] private float attackLockTime = 0.35f;
+    [SerializeField] private float attackMovementMultiplier = 0.5f; // Permite movimento reduzido durante ataque
 
     private int _isRunningHash;
     private int _attackHash;
@@ -54,26 +54,19 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         FlipIfNeeded();
-
-        if (!_isAttacking)
-            UpdateAnimator();
+        UpdateAnimator();
     }
 
     private void FixedUpdate()
     {
-        if (_isAttacking)
-        {
-            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-            return;
-        }
-
         bool grounded = IsGrounded();
+        float currentSpeed = _isAttacking ? speed * attackMovementMultiplier : speed;
 
-        // Jump (prioridade)
+        // Jump
         if (_jumpRequested && grounded)
         {
             Vector2 vJump = rb.linearVelocity;
-            vJump.x = _horizontalInput * speed;
+            vJump.x = _horizontalInput * currentSpeed;
             vJump.y = jumpForce;
             rb.linearVelocity = vJump;
             _jumpRequested = false;
@@ -85,48 +78,39 @@ public class PlayerMovement : MonoBehaviour
         // Movimento
         if (grounded)
         {
-            // Raycast para pegar a normal do chão (para slope)
             int mask = groundLayer.value == 0 ? Physics2D.DefaultRaycastLayers : groundLayer.value;
             RaycastHit2D hit = Physics2D.Raycast(groundCheck.position, Vector2.down, slopeRayLength, mask);
 
             if (hit.collider != null)
             {
-                Vector2 n = hit.normal; // normal da superfície [web:88]
+                Vector2 n = hit.normal;
                 float angle = Vector2.Angle(n, Vector2.up);
 
-                // Se está numa rampa "andável" e existe input
                 if (angle > 0.01f && angle <= maxSlopeAngle && !Mathf.Approximately(_horizontalInput, 0f))
                 {
-                    // Tangente paralela ao chão
                     Vector2 t = Vector2.Perpendicular(n).normalized;
-
-                    // Faz a tangente apontar para o lado do input
                     Vector2 desired = new Vector2(_horizontalInput, 0f);
                     if (Vector2.Dot(t, desired) < 0f) t = -t;
 
-                    rb.linearVelocity = t * (Mathf.Abs(_horizontalInput) * speed);
+                    rb.linearVelocity = t * (Mathf.Abs(_horizontalInput) * currentSpeed);
                     return;
                 }
             }
 
-            // Chão plano (ou sem input / rampa inválida): comportamento original
             Vector2 v = rb.linearVelocity;
-            v.x = _horizontalInput * speed;
+            v.x = _horizontalInput * currentSpeed;
             rb.linearVelocity = v;
         }
         else
         {
-            // No ar: controla só X, mantém Y
             Vector2 v = rb.linearVelocity;
-            v.x = _horizontalInput * speed;
+            v.x = _horizontalInput * currentSpeed;
             rb.linearVelocity = v;
         }
     }
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        if (_isAttacking) return;
-
         if (!context.performed && !context.canceled)
             return;
 
@@ -142,8 +126,6 @@ public class PlayerMovement : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (_isAttacking) return;
-
         if (context.performed)
         {
             _jumpRequested = true;
@@ -163,11 +145,6 @@ public class PlayerMovement : MonoBehaviour
             StopCoroutine(_attackRoutine);
 
         _isAttacking = true;
-        _horizontalInput = 0f;
-
-        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-
-        animator.SetBool(_isRunningHash, false);
         animator.SetTrigger(_attackHash);
 
         _attackRoutine = StartCoroutine(AttackLockRoutine());
@@ -175,7 +152,7 @@ public class PlayerMovement : MonoBehaviour
 
     private IEnumerator AttackLockRoutine()
     {
-        yield return new WaitForSeconds(attackLockTime);
+        yield return new WaitForSeconds(0.5f); // Duração da flag de ataque
         _isAttacking = false;
         _attackRoutine = null;
     }
@@ -228,7 +205,6 @@ public class PlayerMovement : MonoBehaviour
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
 
-        // visual do raycast de slope
         Gizmos.color = Color.yellow;
         Gizmos.DrawLine(groundCheck.position, groundCheck.position + Vector3.down * slopeRayLength);
     }

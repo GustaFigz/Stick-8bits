@@ -12,8 +12,24 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private int damage = 10;
     [SerializeField] private float attackCooldown = 0.3f;
 
-    private float _nextAttackTime;
+    [Header("Audio")]
+    [SerializeField] private AudioClip attackSound;
+    [SerializeField] private AudioClip hitSound;
+    [SerializeField] [Range(0f, 1f)] private float attackVolume = 1f;
+    [SerializeField] [Range(0f, 1f)] private float hitVolume = 0.8f;
 
+    private float _nextAttackTime;
+    private AudioSource _audioSource;
+
+    private void Awake()
+    {
+        _audioSource = GetComponent<AudioSource>();
+        if (_audioSource == null && (attackSound != null || hitSound != null))
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
+        }
+    }
 
     private void Start()
     {
@@ -29,9 +45,10 @@ public class PlayerAttack : MonoBehaviour
         if (Time.time < _nextAttackTime) return;
 
         _nextAttackTime = Time.time + attackCooldown;
+        
+        PlayAttackSound();
         DealDamageNow();
     }
-
 
     // Podes também chamar isto por Animation Event (opcional)
     public void DealDamageNow()
@@ -41,6 +58,8 @@ public class PlayerAttack : MonoBehaviour
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, enemyLayer);
 
         Debug.Log($"[ATTACK] Found {hits.Length} colliders in range");
+
+        bool hitEnemy = false;
 
         foreach (var hit in hits)
         {
@@ -52,14 +71,33 @@ public class PlayerAttack : MonoBehaviour
             {
                 Debug.Log($"[ATTACK] Dealing {damage} damage to {hit.name}");
                 health.TakeDamage(damage);
+                hitEnemy = true;
             }
             else
             {
                 Debug.LogWarning($"[ATTACK] {hit.name} has no EnemyHealth component!");
             }
         }
+
+        if (hitEnemy)
+            PlayHitSound();
     }
 
+    private void PlayAttackSound()
+    {
+        if (attackSound != null && _audioSource != null)
+        {
+            _audioSource.PlayOneShot(attackSound, attackVolume);
+        }
+    }
+
+    private void PlayHitSound()
+    {
+        if (hitSound != null && _audioSource != null)
+        {
+            _audioSource.PlayOneShot(hitSound, hitVolume);
+        }
+    }
 
     private void OnDrawGizmosSelected()
     {

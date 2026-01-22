@@ -186,6 +186,10 @@ MonoBehaviour:
   animator: {fileID: 4523211224221862820}
   deathTriggerParameter: Death
   deathDestroyDelay: 0.4
+  hurtSound: {fileID: 0}
+  deathSound: {fileID: 8300000, guid: e79a6693b47a6d141ab00bb3b7c1b224, type: 3}
+  hurtVolume: 1
+  deathVolume: 1
 --- !u!114 &4748670753741608387
 MonoBehaviour:
   m_ObjectHideFlags: 0

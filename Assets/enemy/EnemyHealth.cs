@@ -11,8 +11,15 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private string deathTriggerParameter = "Death";
     [SerializeField] private float deathDestroyDelay = 0.8f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip hurtSound;
+    [SerializeField] private AudioClip deathSound;
+    [SerializeField] [Range(0f, 1f)] private float hurtVolume = 0.8f;
+    [SerializeField] [Range(0f, 1f)] private float deathVolume = 1f;
+
     private bool _isDead;
     private int _deathHash;
+    private AudioSource _audioSource;
 
     private void Awake()
     {
@@ -21,6 +28,13 @@ public class EnemyHealth : MonoBehaviour
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
+
+        _audioSource = GetComponent<AudioSource>();
+        if (_audioSource == null && (hurtSound != null || deathSound != null))
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
+        }
     }
 
     public void TakeDamage(int amount)
@@ -31,12 +45,16 @@ public class EnemyHealth : MonoBehaviour
 
         if (CurrentHealth == 0)
             Die();
+        else
+            PlayHurtSound();
     }
 
     private void Die()
     {
         if (_isDead) return;
         _isDead = true;
+
+        PlayDeathSound();
 
         if (animator != null)
             animator.SetTrigger(_deathHash);
@@ -57,6 +75,22 @@ public class EnemyHealth : MonoBehaviour
             colliders[i].enabled = false;
 
         StartCoroutine(DestroyAfterDelay());
+    }
+
+    private void PlayHurtSound()
+    {
+        if (hurtSound != null && _audioSource != null)
+        {
+            _audioSource.PlayOneShot(hurtSound, hurtVolume);
+        }
+    }
+
+    private void PlayDeathSound()
+    {
+        if (deathSound != null && _audioSource != null)
+        {
+            _audioSource.PlayOneShot(deathSound, deathVolume);
+        }
     }
 
     private IEnumerator DestroyAfterDelay()
