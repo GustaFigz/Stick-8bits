@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: dbb2e931a1a5b4a4e8086b51174eca40
+guid: 65f9a460f9161fe4398b4b00140978fc
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2844531463381759980
-    second: meat_0
+      213: 6433960392347887839
+    second: image-1.png_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -96,30 +96,17 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: meat_0
+      name: image-1.png_0
       rect:
         serializedVersion: 2
-        x: 19
-        y: 9
-        width: 132
-        height: 142
+        x: 0
+        y: 0
+        width: 16
+        height: 16
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 41845bc74b13688d0800000000000000
-      internalID: -2844531463381759980
+      spriteID: fd824d463e40a4950800000000000000
+      internalID: 6433960392347887839
       vertices: []
       indices: 
       edges: []
@@ -148,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      meat_0: -2844531463381759980
+      image-1.png_0: 6433960392347887839
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

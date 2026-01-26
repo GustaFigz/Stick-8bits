@@ -208,8 +208,8 @@ MonoBehaviour:
   stopDistance: 0.8
   enableChaseDelay: 0.25
   attackRange: 0.9
-  damage: 0
-  attackCooldown: 1
+  damage: 10
+  attackCooldown: 2
   attackLockTime: 0.35
   groundCheck: {fileID: 4067712314482755213}
   groundCheckRadius: 0.12
