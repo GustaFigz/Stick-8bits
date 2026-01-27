@@ -17,6 +17,10 @@ public class PauseMenu : MonoBehaviour
 
     private void Awake()
     {
+        // Em 2D/UI, nunca trave o cursor.
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         SetPaused(false);
     }
 
@@ -32,21 +36,17 @@ public class PauseMenu : MonoBehaviour
     private bool WasPausePressedThisFrame()
     {
 #if ENABLE_INPUT_SYSTEM
-        // New Input System
         if (Keyboard.current != null)
         {
-            // Quando o pauseKey for Escape
             if (pauseKey == KeyCode.Escape && Keyboard.current.escapeKey.wasPressedThisFrame)
                 return true;
 
-            // Fallback gen\u00e9rico: tenta converter KeyCode -> Key do InputSystem
             var keyString = pauseKey.ToString();
             if (System.Enum.TryParse<Key>(keyString, out var key))
                 return Keyboard.current[key].wasPressedThisFrame;
         }
 #endif
 
-        // Old Input Manager (fallback)
         return Input.GetKeyDown(pauseKey);
     }
 
@@ -76,15 +76,17 @@ public class PauseMenu : MonoBehaviour
 
         if (logToConsole) Debug.Log($"[PauseMenu] IsPaused={IsPaused} Time.timeScale={Time.timeScale}");
 
-        // Opcional: mostra o mouse no pause
-        Cursor.visible = paused;
-        Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
+        // Em pause, normalmente queremos o cursor vis\u00edvel; fora do pause tamb\u00e9m (jogo 2D).
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     private void OnDestroy()
     {
-        // Garante que o jogo n\u00e3o fique travado ao sair/destruir o objeto.
         if (Time.timeScale == 0f)
             Time.timeScale = 1f;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }
